@@ -12,6 +12,7 @@ from werkzeug.exceptions import HTTPException
 
 from discord_bot import DiscordBot
 from utils import get_brawler_icon_path, resolve_project_path, resolve_within
+import license_check
 from .runtime import RuntimeManager
 from .services import WebDataService
 
@@ -156,7 +157,24 @@ def create_app(pyla_main, start_discord_bot=False):
                 "code": "INVALID_UI_ORIGIN",
             }), 403
 
+        if request.path != "/api/license" and not license_check.is_licensed():
+            return jsonify({
+                "ok": False,
+                "message": "ShowdownAI needs a license key for this computer.",
+                "code": "LICENSE_REQUIRED",
+            }), 403
+
         return None
+
+    @app.get("/api/license")
+    def get_license():
+        return jsonify({"ok": True, **license_check.license_status()})
+
+    @app.post("/api/license")
+    def activate_license():
+        payload = request.get_json(silent=True) or {}
+        result = license_check.activate(str(payload.get("key", "")))
+        return jsonify(result), (200 if result["ok"] else 400)
 
     @app.after_request
     def add_local_security_headers(response):

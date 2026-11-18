@@ -48,7 +48,17 @@ python main.py
 | `--no-console` | Hides the console window, output goes to `pyla.log` in the current folder. Ignored when ShowdownAI is started from an existing terminal, so your own terminal is never hidden. |
 | `--no-webapp` | Opens the UI in the default browser instead of the desktop window |
 
-Playstyles still use the `.pyla` file format, so existing playstyle files keep working.
+Playstyles still use the `.pyla` file format, so existing playstyle files keep working. The default playstyle is Showdown Follower.
+
+## License keys
+
+ShowdownAI only runs on computers that have a key. On first launch it shows a lock screen with a machine ID. To make a key for that computer:
+
+```sh
+python tools/generate_license.py MACHINE-ID path/to/private_key.pem
+```
+
+Paste the printed key into the lock screen. A key only works on the computer whose machine ID it was made for. Keep `private_key.pem` secret and never commit it: anyone who has it can make keys.
 
 ## License and credits
 

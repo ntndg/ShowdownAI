@@ -3,7 +3,6 @@ const NAV_ITEMS = {
     queue: { label: "Brawlers", icon: "queue" },
     playstyles: { label: "Playstyles", icon: "playstyles" },
     history: { label: "History", icon: "history" },
-    logs: { label: "Logs", icon: "logs" },
     settings: { label: "Settings", icon: "settings" },
 };
 
@@ -46,15 +45,6 @@ const PYLA_TIPS = [
     { id: "game-language", title: "Keep Brawl Stars in English", text: "Set Brawl Stars' language to English so ShowdownAI can read the game correctly. You can still use any language for ShowdownAI's interface." },
     { id: "mumu", title: "Try MuMu for better performance", text: "MuMu usually gives the best performance with ShowdownAI. If your current emulator feels slow, it's worth trying." },
     { id: "ldplayer-gas", title: "Walking into the gas on LDPlayer?", text: "Try switching to MuMu if ShowdownAI keeps moving into Showdown gas on LDPlayer." },
-    { id: "boost-premium", audience: "free", title: "Get Premium with a server boost", text: "Boosting the official Discord while the server is below Level 3 gives you Premium access while your boost remains active. Check Discord for current details.", link: "discord" },
-    { id: "early-access-pathfinding", audience: "free", title: "Find a way around obstacles", text: "Early Access v1.1.0 plans routes around walls and water, avoids poison gas, and looks for a reachable position when its destination is blocked.", link: "early-access" },
-    { id: "early-access-bush-camper", audience: "free", title: "Try Showdown Bush Camper", text: "Early Access v1.1.0 includes Showdown Bush Camper. It moves between bushes towards the centre, keeps moving while hiding, and retreats or defends itself when enemies approach. Check its supported gamemodes.", link: "early-access" },
-    { id: "early-access-emulator-test", audience: "free", title: "Find out what's causing lag", text: "Early Access v1.1.0 adds Test emulator delay on the dashboard. Measure emulator delay, capture FPS and bot processing time to see where a slowdown comes from.", link: "early-access" },
-    { id: "weekly-free-access", audience: "free", title: "Try Early Access free each week", text: "Try Early Access free for one day each week, with every Premium feature on the newest build. The day can change; check the official Discord for this week's announcement.", link: "discord" },
-    { id: "premium-discord", audience: "free", title: "Edit your queue from Discord", text: "Stable v1.0 Premium and Early Access include /add_to_queue, /remove_from_queue and /clear_queue, so you can edit your queue remotely while ShowdownAI is stopped.", link: "pricing" },
-    { id: "premium-instances", audience: "free", title: "Run more than one account", text: "Run multiple emulator instances at once with Stable v1.0 Premium or Early Access, each with its own ShowdownAI profile and queue.", link: "pricing" },
-    { id: "premium-aiming", audience: "free", title: "Try predictive aiming", text: "Stable v1.0 Standard and Premium, or Early Access, include Aimbot playstyles that lead moving targets.", link: "pricing" },
-    { id: "premium-api", audience: "free", title: "Sync your Brawl Stars stats", text: "With Stable v1.0 Premium or Early Access, add your Player Tag to sync trophies and win streaks through the Brawl Stars API. Use Push All to queue brawlers below your target.", link: "pricing" },
 ];
 const BRAWLER_RARITIES = {
     "Common": { order: 1, color: "#b8bec9" },
@@ -206,11 +196,73 @@ document.addEventListener("DOMContentLoaded", async () => {
     bindShellEvents();
 
     try {
+        const unlocked = await ensureLicense();
+        if (!unlocked) return;
         await bootstrap();
     } catch (error) {
         showToast(error.message || "Unable to load the ShowdownAI UI.", "error");
     }
 });
+
+async function ensureLicense() {
+    const status = await fetchJSON("/api/license");
+    if (status.licensed) return true;
+
+    const overlay = document.createElement("div");
+    overlay.className = "license-overlay";
+    overlay.innerHTML = `
+        <div class="license-card" role="dialog" aria-modal="true" aria-labelledby="licenseTitle">
+            <header>
+                <img src="/static/img/showdownai-logo.svg" alt="">
+                <h2 id="licenseTitle">Unlock ShowdownAI</h2>
+            </header>
+            <p>This copy needs a license key for this computer. Send the owner your machine ID below and paste the key you get back.</p>
+            <div class="input-group">
+                <span>Machine ID</span>
+                <div class="license-machine">
+                    <code id="licenseMachineId" data-i18n-skip>${escapeHtml(status.machine_id || "")}</code>
+                    <button id="licenseCopyBtn" class="btn btn-sm" type="button">Copy</button>
+                </div>
+            </div>
+            <label class="input-group">
+                <span>License key</span>
+                <textarea id="licenseKeyInput" spellcheck="false" autocomplete="off" placeholder="Paste your key here"></textarea>
+            </label>
+            <p id="licenseError" class="license-error" role="alert"></p>
+            <button id="licenseActivateBtn" class="btn btn-primary w-full" type="button">Unlock</button>
+        </div>`;
+    document.body.appendChild(overlay);
+
+    document.getElementById("licenseCopyBtn").addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(status.machine_id || "");
+            showToast("Machine ID copied.", "success");
+        } catch {
+            showToast("Couldn't copy. Select the ID and copy it manually.", "error");
+        }
+    });
+    document.getElementById("licenseActivateBtn").addEventListener("click", async () => {
+        const button = document.getElementById("licenseActivateBtn");
+        const errorText = document.getElementById("licenseError");
+        button.disabled = true;
+        errorText.textContent = "";
+        try {
+            const result = await fetchJSON("/api/license", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: document.getElementById("licenseKeyInput").value }),
+            }, true);
+            if (result.ok) {
+                window.location.reload();
+                return;
+            }
+            errorText.textContent = result.message || "This key isn't valid for this computer.";
+        } finally {
+            button.disabled = false;
+        }
+    });
+    return false;
+}
 
 function renderNav() {
     const nav = document.querySelector(".nav-menu");
@@ -552,30 +604,6 @@ function renderDashboard() {
                 </section>
             </div>
 
-            <section class="panel profile-switcher-card premium-profile-preview">
-                <div class="profile-switcher-heading">
-                    <div class="profile-heading-copy">
-                        <p class="eyebrow">Profiles</p>
-                        <div class="profile-title-row"><h3 class="panel-title">One setup today, more with Premium</h3><span class="premium-badge-inline">Premium</span></div>
-                    </div>
-                    <a class="btn btn-sm profile-add-btn premium-cta" href="https://pyla-ai.angelfirela.dev/premium" target="_blank" rel="noreferrer">Explore Premium</a>
-                </div>
-                <div class="profile-list premium-profile-list">
-                    <div class="profile-entry is-active">
-                        <div class="profile-entry-main">
-                            <span class="profile-entry-name">Public profile</span>
-                            <span class="profile-entry-details"><span class="profile-runtime-status status-${runtimeState}"><span class="profile-status-dot"></span>${escapeHtml(runtimeLabel(runtime))}</span><span class="profile-port-summary">ADB ${emulatorPort}</span></span>
-                        </div>
-                        <span class="profile-active-label">Active</span>
-                    </div>
-                    <button class="profile-entry premium-profile-locked premium-locked-action" type="button">
-                        <div class="profile-entry-main"><span class="profile-entry-name">Second emulator profile</span><span class="profile-entry-details">Separate queue, settings, history and runtime</span></div><span class="premium-profile-lock">Premium</span>
-                    </button>
-                    <button class="profile-entry premium-profile-locked premium-locked-action" type="button">
-                        <div class="profile-entry-main"><span class="profile-entry-name">Additional profile</span><span class="profile-entry-details">Run independent account configurations</span></div><span class="premium-profile-lock">Premium</span>
-                    </button>
-                </div>
-            </section>
         </div>`;
 
     document.getElementById("browsePlaystylesBtn")?.addEventListener("click", () => setView("playstyles"));
@@ -732,7 +760,7 @@ function renderQueue() {
     const dynamicSortsLocked = !state.bootstrap?.auth?.premium;
     const targetHelp = `<span class="tooltip-anchor push-all-help" data-tooltip="Change this amount by editing Default Trophy Target in Settings." aria-label="How to change the Push All target">?</span>`;
     const pushAllButton = !state.bootstrap?.auth?.premium
-        ? `<div class="push-all-control"><button id="pushAllQueueLockedBtn" class="btn btn-locked premium-locked-action" type="button">${iconMarkup("queue")} Push All to ${defaultTarget} <span class="premium-lock-icon">🔒</span></button>${targetHelp}</div>`
+        ? ""
         : hasValidPlayerInfo
             ? `<div class="push-all-control"><button id="pushAllQueueBtn" class="btn" type="button">${iconMarkup("queue")} Push All to ${defaultTarget}</button>${targetHelp}</div>`
             : "";
@@ -747,11 +775,11 @@ function renderQueue() {
                         <p class="eyebrow">Brawler Queue</p>
                         <h3 class="panel-title">Select a brawler and add it to the run order</h3>
                     </div>
-                    <div class="player-pill ${playerPill.className}">
+                    ${state.bootstrap?.auth?.premium ? `<div class="player-pill ${playerPill.className}">
                         ${playerPill.className === "is-loading" ? '<div class="player-pill-spinner"></div>' : ''}
                         <strong>${escapeHtml(playerPill.title)}</strong>
                         <span>${escapeHtml(playerPill.detail)}</span>
-                    </div>
+                    </div>` : ""}
                 </div>
 
                 <div class="queue-toolbar">
@@ -761,10 +789,10 @@ function renderQueue() {
                             <input id="brawlerSearch" type="search" placeholder="Search by brawler name" value="${escapeHtml(state.brawlerSearch)}">
                         </label>
                         ${pushAllButton}
-                        <label class="input-group ${!state.bootstrap?.auth?.premium ? "disabled-premium" : ""}">
+                        ${state.bootstrap?.auth?.premium ? `<label class="input-group ${!state.bootstrap?.auth?.premium ? "disabled-premium" : ""}">
                             <span>Player Tag ${!state.bootstrap?.auth?.premium ? `<span class="premium-badge">Premium</span>` : ""}</span>
                             <input id="playerTagInput" type="text" placeholder="${!state.bootstrap?.auth?.premium ? "Locked - Premium Only" : "#PLAYER"}" value="${!state.bootstrap?.auth?.premium ? "" : escapeHtml(formatPlayerTagInput(state.bootstrap.settings.general.player_tag || ""))}" ${!state.bootstrap?.auth?.premium ? "disabled" : ""}>
-                        </label>
+                        </label>` : ""}
                     </div>
                     <div class="queue-toolbar-bottom">
                         <div class="toolbar-actions brawler-sort-actions">
@@ -774,9 +802,9 @@ function renderQueue() {
                                     <select id="brawlerSortSelect">
                                         <option value="alphabetical" ${state.brawlerSort === "alphabetical" ? "selected" : ""}>By name</option>
                                         <option value="rarity" ${state.brawlerSort === "rarity" ? "selected" : ""}>By rarity</option>
-                                        <option value="trophies" ${state.brawlerSort === "trophies" ? "selected" : ""}>${dynamicSortsLocked ? "🔒 " : ""}By trophies</option>
-                                        <option value="win_streak" ${state.brawlerSort === "win_streak" ? "selected" : ""}>${dynamicSortsLocked ? "🔒 " : ""}By win streak</option>
-                                        <option value="power_level" ${state.brawlerSort === "power_level" ? "selected" : ""}>${dynamicSortsLocked ? "🔒 " : ""}By power level</option>
+                                        ${dynamicSortsLocked ? "" : `<option value="trophies" ${state.brawlerSort === "trophies" ? "selected" : ""}>By trophies</option>`}
+                                        ${dynamicSortsLocked ? "" : `<option value="win_streak" ${state.brawlerSort === "win_streak" ? "selected" : ""}>By win streak</option>`}
+                                        ${dynamicSortsLocked ? "" : `<option value="power_level" ${state.brawlerSort === "power_level" ? "selected" : ""}>By power level</option>`}
                                     </select>
                                     <button id="brawlerSortDirectionBtn" class="sort-direction-btn" type="button" title="${state.brawlerSortDirection === "asc" ? "Ascending — click for descending" : "Descending — click for ascending"}" aria-label="${state.brawlerSortDirection === "asc" ? "Sort descending" : "Sort ascending"}">
                                         ${state.brawlerSortDirection === "asc" ? "↑" : "↓"}
@@ -1639,8 +1667,8 @@ function renderTrophyChart(points) {
             <svg class="history-chart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Trophy evolution chart">
                 <defs>
                     <linearGradient id="historyChartFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="rgba(255,42,68,0.32)" />
-                        <stop offset="100%" stop-color="rgba(255,42,68,0.02)" />
+                        <stop offset="0%" stop-color="rgba(16,185,129,0.28)" />
+                        <stop offset="100%" stop-color="rgba(16,185,129,0.02)" />
                     </linearGradient>
                 </defs>
                 <line x1="${padLeft}" y1="${padY}" x2="${padLeft}" y2="${height - padY}" class="chart-axis" />
@@ -1816,6 +1844,10 @@ function renderShowAllBrawlersPreference() {
 
 function renderSettingField(section, field, value) {
     if (!shouldRenderSettingField(section, field)) {
+        return "";
+    }
+    // ShowdownAI has no premium edition: hide settings that only work with it.
+    if (!state.bootstrap?.auth?.premium && ["advanced_debug_visuals", "recover_when_wrong_brawler_used", "player_tag"].includes(field.key)) {
         return "";
     }
 
@@ -2856,7 +2888,7 @@ function setSliderVisual(slider) {
     const max = Number(slider.max || 100);
     const value = Number(slider.value || min);
     const percent = max === min ? 0 : ((value - min) / (max - min)) * 100;
-    slider.style.background = `linear-gradient(90deg, rgba(255,42,68,1) 0%, rgba(255,112,137,1) ${percent}%, rgba(255,255,255,0.08) ${percent}%, rgba(255,255,255,0.08) 100%)`;
+    slider.style.background = `linear-gradient(90deg, var(--slider-start, #34d399) 0%, var(--slider-end, #10b981) ${percent}%, rgba(255,255,255,0.08) ${percent}%, rgba(255,255,255,0.08) 100%)`;
 }
 
 async function commitPlayerTagUpdate(tag) {
@@ -3302,28 +3334,7 @@ function cssEscape(value) {
 
 
 function showPremiumModal() {
-    let modal = document.getElementById("premiumFeatureModal");
-    if (!modal) {
-        modal = document.createElement("div");
-        modal.id = "premiumFeatureModal";
-        modal.className = "modal-overlay";
-        modal.innerHTML = `
-            <div class="modal">
-                <div class="modal-header">
-                    <p class="eyebrow premium-copy">Premium Feature</p>
-                    <h3>Unlock more automation</h3>
-                    <p>Profiles, live player data, Push All and selected advanced controls are available in Premium. The public edition remains free and open-source.</p>
-                </div>
-                <div class="premium-modal-actions">
-                    <a class="btn btn-primary w-full premium-cta" href="https://pyla-ai.angelfirela.dev/premium" target="_blank" rel="noreferrer">Explore Premium</a>
-                    <button id="closePremiumModalBtn" class="btn w-full" type="button">Maybe later</button>
-                </div>
-            </div>`;
-        document.body.appendChild(modal);
-        document.getElementById("closePremiumModalBtn")?.addEventListener("click", () => modal.classList.add("hidden"));
-        modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.add("hidden"); });
-    }
-    modal.classList.remove("hidden");
+    // ShowdownAI has no premium edition, so premium-only actions are hidden and this does nothing.
 }
 
 async function refreshLogs() {

@@ -7,6 +7,7 @@ import threading
 import time
 import traceback
 from typing import Any, Callable
+import license_check
 
 
 GLOBAL_LOGS = collections.deque(maxlen=2000)
@@ -130,6 +131,8 @@ class RuntimeManager:
             }
 
     def start(self, queue_data: list[dict[str, Any]], discord_bot) -> dict[str, Any]:
+        if not license_check.is_licensed():
+            return {"ok": False, "message": "ShowdownAI needs a license key for this computer."}
         with self._lock:
             thread_alive = self._thread.is_alive() if self._thread else False
 

@@ -737,7 +737,7 @@ def get_playstyles_list():
 
 def load_default_pyla_script():
     config = load_toml_as_dict("cfg/bot_config.toml")
-    current_playstyle = config.get("current_playstyle", "default_up.pyla")
+    current_playstyle = config.get("current_playstyle", "team_showdown.pyla")
     return load_pyla_script(current_playstyle)
 
 

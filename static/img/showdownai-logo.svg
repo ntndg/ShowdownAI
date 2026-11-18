@@ -1,17 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ShowdownAI">
-  <defs>
-    <linearGradient id="sd-g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e4ff5c"/>
-      <stop offset="1" stop-color="#7fd61a"/>
-    </linearGradient>
-    <linearGradient id="sd-y" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffe45c"/>
-      <stop offset="1" stop-color="#ffb800"/>
-    </linearGradient>
-  </defs>
-  <path d="M32 4 56 15v16c0 14.5-10.2 25.5-24 29C18.2 56.5 8 45.5 8 31V15Z" fill="url(#sd-g)" stroke="#08140a" stroke-width="4" stroke-linejoin="round"/>
-  <circle cx="32" cy="31" r="12" fill="#08140a"/>
-  <circle cx="32" cy="31" r="8" fill="none" stroke="url(#sd-y)" stroke-width="3"/>
-  <path d="M32 17v7M32 38v7M18 31h7M39 31h7" stroke="#08140a" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="32" cy="31" r="3" fill="url(#sd-y)"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#10b981"/>
+  <circle cx="32" cy="32" r="13" fill="none" stroke="#04140d" stroke-width="4"/>
+  <path d="M32 12v10M32 42v10M12 32h10M42 32h10" stroke="#04140d" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="32" r="3.5" fill="#04140d"/>
 </svg>

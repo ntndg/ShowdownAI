@@ -148,7 +148,7 @@ def apply_play_order(queue_data):
 def pyla_main(discord_bot, queue_data, stop_event=None, runtime_control=None):
     class Main:
         def __init__(self):
-            current_playstyle = load_toml_as_dict("cfg/bot_config.toml").get("current_playstyle", "default_up.pyla")
+            current_playstyle = load_toml_as_dict("cfg/bot_config.toml").get("current_playstyle", "team_showdown.pyla")
             try:
                 self.max_fps = int(load_toml_as_dict("cfg/general_config.toml")['max_fps'])
             except ValueError:
