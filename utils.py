@@ -366,7 +366,7 @@ def check_version():
         if latest_version:
             if version.parse(PYLA_VERSION) < version.parse(latest_version):
                 print(
-                    "Warning: You are not using the latest public version of Pyla. "
+                    "Warning: You are not using the latest public version of ShowdownAI. "
                     f"Download it here: {DOWNLOAD_URL}"
                 )
         else:
@@ -410,17 +410,17 @@ def notify_user(message_type, screenshot, stage_manager) -> None:
         return
 
     if message_type == "completed":
-        status_line = f"Pyla has completed all its targets!"
+        status_line = f"ShowdownAI has completed all its targets!"
     elif message_type == "bot_is_stuck":
         status_line = f"Your bot is currently stuck, attempted to restart brawl stars !"
     elif message_type == "brawler_goal":
         current_brawler = stage_manager.brawlers_pick_data[0]["brawler"]
-        status_line = f"Pyla completed brawler goal for {current_brawler}!"
+        status_line = f"ShowdownAI completed brawler goal for {current_brawler}!"
     elif message_type in ["regular_minutes_ping", "regular_matches_ping"]:
-        status_line = "Pyla is still running."
+        status_line = "ShowdownAI is still running."
     elif message_type == "bot_failed_brawler_selection":
         current_brawler = stage_manager.brawlers_pick_data[0]["brawler"]
-        status_line = f"Pyla failed to select the brawler {current_brawler} after multiple attempts, try changing the OCR Scale Down setting or select it manually and restart. Putting it at the end of the queue and skipping it..."
+        status_line = f"ShowdownAI failed to select the brawler {current_brawler} after multiple attempts, try changing the OCR Scale Down setting or select it manually and restart. Putting it at the end of the queue and skipping it..."
     else:
         status_line = "Notification"
 
@@ -455,7 +455,7 @@ def notify_user(message_type, screenshot, stage_manager) -> None:
 
         payload = {
             "content": ping,
-            "username": "Pyla notifier",
+            "username": "ShowdownAI notifier",
             "embeds": [embed],
         }
 
@@ -737,7 +737,7 @@ def get_playstyles_list():
 
 def load_default_pyla_script():
     config = load_toml_as_dict("cfg/bot_config.toml")
-    current_playstyle = config.get("current_playstyle", "default_up.pyla")
+    current_playstyle = config.get("current_playstyle", "team_showdown.pyla")
     return load_pyla_script(current_playstyle)
 
 

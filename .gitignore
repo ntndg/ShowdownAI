@@ -52,3 +52,7 @@ api/requirements.txt
 api/licensing_bot.py
 api/licensing_backend.py
 .claude/launch.json
+
+# ShowdownAI license: never commit the signing key or a machine-specific key
+*.pem
+cfg/license.toml

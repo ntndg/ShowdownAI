@@ -32,13 +32,13 @@ if __name__ == "__main__" and len(sys.argv) >= 9 and sys.argv[1] == "--debug-vie
 
 def parse_cli_args(argv=None):
     parser = argparse.ArgumentParser(
-        prog="PylaAI",
-        description="PylaAI, the best free and open source brawl stars bot.",
+        prog="ShowdownAI",
+        description="ShowdownAI, the best free and open source brawl stars bot.",
     )
     parser.add_argument(
         "--no-console",
         action="store_true",
-        help="Hide PylaAI's own console and write output to a log file.",
+        help="Hide ShowdownAI's own console and write output to a log file.",
     )
     interface_group = parser.add_mutually_exclusive_group()
     interface_group.add_argument(
@@ -111,7 +111,7 @@ if CLI_ARGS.no_console:
 
 if CLI_ARGS.no_console and not CONSOLE_HIDDEN:
     print(
-        "--no-console ignored: this console belongs to the terminal PylaAI was "
+        "--no-console ignored: this console belongs to the terminal ShowdownAI was "
         "started from, so output stays here."
     )
 
@@ -148,7 +148,7 @@ def apply_play_order(queue_data):
 def pyla_main(discord_bot, queue_data, stop_event=None, runtime_control=None):
     class Main:
         def __init__(self):
-            current_playstyle = load_toml_as_dict("cfg/bot_config.toml").get("current_playstyle", "default_up.pyla")
+            current_playstyle = load_toml_as_dict("cfg/bot_config.toml").get("current_playstyle", "team_showdown.pyla")
             try:
                 self.max_fps = int(load_toml_as_dict("cfg/general_config.toml")['max_fps'])
             except ValueError:
@@ -310,7 +310,7 @@ def pyla_main(discord_bot, queue_data, stop_event=None, runtime_control=None):
 
             self.window_controller.release_movement()
             self.runtime_control.mark_paused()
-            cprint("Pyla is paused in the lobby. Waiting for Start to resume.", "#AAE5A4")
+            cprint("ShowdownAI is paused in the lobby. Waiting for Start to resume.", "#AAE5A4")
 
             while self.should_pause() and not self.should_stop():
                 state = self.get_latest_state()
@@ -507,7 +507,7 @@ def open_browser_later(local_url):
 def stop_on_window_close(app):
     """Ask a running bot instance to stop when its desktop window closes."""
     def _on_close():
-        print("PylaAI window closed, shutting down.")
+        print("ShowdownAI window closed, shutting down.")
         try:
             app.config["runtime_manager"].stop()
         except Exception as error:
@@ -534,21 +534,21 @@ def run_interface(app, local_url, interface_mode):
 
     if interface_mode == "browser":
         open_browser_later(local_url)
-        print("PylaAI is opening the local web UI in the system browser.")
+        print("ShowdownAI is opening the local web UI in the system browser.")
     else:
-        print(f"PylaAI is running headless. Open {local_url} manually to use the local web UI.")
+        print(f"ShowdownAI is running headless. Open {local_url} manually to use the local web UI.")
 
     app.run(host="127.0.0.1", port=int(local_url.rsplit(":", 1)[1]), debug=False, use_reloader=False)
 
 if __name__ == "__main__":
-    print("Starting PylaAI, the best free and open source brawl stars bot")
+    print("Starting ShowdownAI, the best free and open source brawl stars bot")
     print("The only official discord is", get_discord_link())
     from webui import create_app
 
     port = find_open_port()
     app = create_app(pyla_main, start_discord_bot=True)
     local_url = f"http://127.0.0.1:{port}"
-    print(f"Starting Pyla web UI at {local_url}")
+    print(f"Starting ShowdownAI web UI at {local_url}")
     if CONSOLE_HIDDEN:
         print(f"Console output is written to {CONSOLE_LOG_FILE}")
     if CLI_ARGS.interface_mode is not None:
