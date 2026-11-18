@@ -943,7 +943,7 @@ class WebDataService:
         auth_payload = self.get_auth_state()
         return {
             "app": {
-                "name": "PylaAI",
+                "name": "ShowdownAI",
                 "version": self.get_current_version(),
                 "latest_version": self.get_latest_version_safe(),
                 "warnings": self.get_warnings(),

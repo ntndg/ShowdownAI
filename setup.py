@@ -93,7 +93,7 @@ install_requires = [
 ]
 
 setup(
-    name="PylaAI",
+    name="ShowdownAI",
     version="1.0.0",
     packages=find_packages(exclude=["api", "cfg", "images", "models"]),
     install_requires=install_requires,

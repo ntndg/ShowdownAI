@@ -81,7 +81,7 @@ class MatchLogger:
             self._queue.put(("close", None))
 
     def shutdown(self):
-        """Close the current file so it gets a valid gzip trailer, e.g. when Pyla is stopped mid-match."""
+        """Close the current file so it gets a valid gzip trailer, e.g. when ShowdownAI is stopped mid-match."""
         with self._lock:
             if self._thread is None or self._closed:
                 return
@@ -159,7 +159,7 @@ class MatchLogger:
                     handle.write(json.dumps(payload, separators=(",", ":"), default=_json_default))
                     handle.write("\n")
                 now = time.perf_counter()
-                # A sync flush keeps everything written so far readable if Pyla crashes mid-match.
+                # A sync flush keeps everything written so far readable if ShowdownAI crashes mid-match.
                 if handle is not None and now - last_flush >= FLUSH_INTERVAL_S:
                     handle.flush()
                     last_flush = now

@@ -138,8 +138,8 @@ class RuntimeManager:
                     self.rt_control.resume()
                     self._state = "running"
                     self._last_error = ""
-                    return {"ok": True, "message": "Pyla resumed."}
-                return {"ok": False, "message": f"Pyla cannot start while state is {self._state}."}
+                    return {"ok": True, "message": "ShowdownAI resumed."}
+                return {"ok": False, "message": f"ShowdownAI cannot start while state is {self._state}."}
 
             self.rt_control = RuntimeControl(self._set_state)
             self._state = "running"
@@ -152,7 +152,7 @@ class RuntimeManager:
                 name="pyla-runtime",
             )
             self._thread.start()
-            return {"ok": True, "message": "Pyla started."}
+            return {"ok": True, "message": "ShowdownAI started."}
 
     def start_current_queue(self, discord_bot) -> dict[str, Any]:
         if not self.queue_provider or not self._auth_provider:
@@ -192,7 +192,7 @@ class RuntimeManager:
                     self._last_error = ""
                 else:
                     self._state = "error"
-                    self._last_error = f"Pyla exited with code {code}."
+                    self._last_error = f"ShowdownAI exited with code {code}."
         except Exception as exc:
             with self._lock:
                 self._state = "error"
@@ -209,17 +209,17 @@ class RuntimeManager:
         with self._lock:
             thread_alive = self._thread.is_alive() if self._thread else False
             if not thread_alive or not self.rt_control:
-                return {"ok": False, "message": "Pyla is not running."}
+                return {"ok": False, "message": "ShowdownAI is not running."}
 
             if self._state == "running":
                 self.rt_control.request_pause()
                 self._state = "pausing"
-                return {"ok": True, "message": "Pause requested. Pyla will pause in the lobby."}
+                return {"ok": True, "message": "Pause requested. ShowdownAI will pause in the lobby."}
 
             if self._state in {"pausing", "paused"}:
                 return {"ok": True, "message": "Pause already requested."}
 
-            return {"ok": False, "message": f"Pyla cannot pause while state is {self._state}."}
+            return {"ok": False, "message": f"ShowdownAI cannot pause while state is {self._state}."}
 
     def stop(self) -> dict[str, Any]:
         with self._lock:
@@ -227,7 +227,7 @@ class RuntimeManager:
             if not thread_alive or not self.rt_control:
                 self._state = "idle"
                 self._session_started_at = None
-                return {"ok": True, "message": "Pyla is already stopped."}
+                return {"ok": True, "message": "ShowdownAI is already stopped."}
 
             thread = self._thread
             was_paused = self._state == "paused"
@@ -246,10 +246,10 @@ class RuntimeManager:
                         self._state = "idle"
                         stopped_state = "idle"
                 if stopped_state == "error":
-                    return {"ok": False, "message": self._last_error or "Pyla stopped with an error."}
-                return {"ok": True, "message": "Pyla stopped."}
+                    return {"ok": False, "message": self._last_error or "ShowdownAI stopped with an error."}
+                return {"ok": True, "message": "ShowdownAI stopped."}
 
-        return {"ok": True, "message": "Stop requested. Pyla is shutting down."}
+        return {"ok": True, "message": "Stop requested. ShowdownAI is shutting down."}
 
     def get_logs(self) -> list[str]:
         with GLOBAL_LOGS_LOCK:
